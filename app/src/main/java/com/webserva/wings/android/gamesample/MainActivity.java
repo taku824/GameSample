@@ -6,6 +6,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.view.MotionEvent;
 import android.view.View;
+import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -21,6 +22,10 @@ public class MainActivity extends AppCompatActivity {
     private ImageView black;
     private ImageView pink;
 
+    // size
+    private int frameHeight;
+    private int droidSize;
+
     // 位置
     private float droidY;
     
@@ -30,6 +35,7 @@ public class MainActivity extends AppCompatActivity {
 
     // Status
     private boolean action_flg = false;
+    private boolean start_flg = false;
 
 
     @Override
@@ -37,6 +43,7 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        // Viewの生成
         scoreLabel = findViewById(R.id.scoreLabel);
         startLabel = findViewById(R.id.startLabel);
         droid = findViewById(R.id.droid);
@@ -44,6 +51,7 @@ public class MainActivity extends AppCompatActivity {
         pink = findViewById(R.id.pink);
         orange = findViewById(R.id.orange);
 
+        // 初期位置・状態
         orange.setX(-80.0f);
         orange.setY(-80.0f);
         pink.setX(-80.0f);
@@ -51,25 +59,16 @@ public class MainActivity extends AppCompatActivity {
         black.setX(-80.0f);
         black.setY(-80.0f);
 
-        startLabel.setVisibility(View.INVISIBLE);
+
         droidY = 1000.0f;
 
 
 
-        timer.schedule(new TimerTask() {
-            @Override
-            public void run() {
-                handler.post(new Runnable() {
-                    @Override
-                    public void run() {
-                        changePos();
-                    }
-                });
-            }
-        }, 0, 20);
+
     }
 
 
+    // 移動
     public void changePos(){
 
         if(action_flg){
@@ -80,27 +79,61 @@ public class MainActivity extends AppCompatActivity {
             droidY += 20;
         }
 
+        // 上下の壁を作る
+        if(droidY < 0) droidY = 0;
+        if(droidY > frameHeight - droidSize) droidY = frameHeight - droidSize;
+        
         droid.setY(droidY);
     }
 
 
+    // タッチしてるか否かで、移動方向を変更
     @Override
     public boolean onTouchEvent(MotionEvent event) {
 
-        if(event.getAction() == MotionEvent.ACTION_DOWN){
-            action_flg = true;
-        }else if (event.getAction() == MotionEvent.ACTION_UP){
-            action_flg = false;
 
+        if(start_flg == false){
+            start_flg = true;
+
+            // 画面の大き取得
+            FrameLayout frame = findViewById(R.id.frame);
+            frameHeight = frame.getHeight();
+
+            droidY = droid.getY();
+            droidSize = droid.getHeight();
+
+            // どこかへすっ飛ばす
+            startLabel.setVisibility(View.GONE);
+
+            // 20ms毎にchangePos()を実行 LOOPiNG...
+            timer.schedule(new TimerTask() {
+                @Override
+                public void run() {
+                    handler.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            changePos();
+                        }
+                    });
+                }
+            }, 0, 20);
+
+
+        }else{
+            if(event.getAction() == MotionEvent.ACTION_DOWN){
+                action_flg = true;
+            }else if (event.getAction() == MotionEvent.ACTION_UP){
+                action_flg = false;
+
+            }
         }
         return true;
     }
+
+
+
+
+
+
 }
-
-
-
-
-
-
-
 
