@@ -3,10 +3,14 @@ package com.webserva.wings.android.gamesample;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.os.Bundle;
+import android.os.Handler;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
+
+import java.util.Timer;
+import java.util.TimerTask;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -19,7 +23,13 @@ public class MainActivity extends AppCompatActivity {
 
     // 位置
     private float droidY;
+    
+    // Handler & Timer
+    private Handler handler = new Handler();
+    private Timer timer = new Timer();
 
+    // Status
+    private boolean action_flg = false;
 
 
     @Override
@@ -43,6 +53,34 @@ public class MainActivity extends AppCompatActivity {
 
         startLabel.setVisibility(View.INVISIBLE);
         droidY = 1000.0f;
+
+
+
+        timer.schedule(new TimerTask() {
+            @Override
+            public void run() {
+                handler.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        changePos();
+                    }
+                });
+            }
+        }, 0, 20);
+    }
+
+
+    public void changePos(){
+
+        if(action_flg){
+            // Touching
+            droidY -= 20;
+        }else{
+            // Releasing
+            droidY += 20;
+        }
+
+        droid.setY(droidY);
     }
 
 
@@ -50,10 +88,11 @@ public class MainActivity extends AppCompatActivity {
     public boolean onTouchEvent(MotionEvent event) {
 
         if(event.getAction() == MotionEvent.ACTION_DOWN){
-            droidY -= 20;
-        }
-        droid.setY(droidY);
+            action_flg = true;
+        }else if (event.getAction() == MotionEvent.ACTION_UP){
+            action_flg = false;
 
+        }
         return true;
     }
 }
